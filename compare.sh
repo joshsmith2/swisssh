@@ -52,11 +52,11 @@ while IFS= read -r root; do
     roots_string="$roots_string $root"
     full_path=$root$path
     echo $full_path
-    total_size=`du -hc $full_path | tail -n 1`
+    total_size=`du -hc "${full_path}" | tail -n 1`
     echo "Size: $total_size"
     if $list_dir; then
         echo "ls -laGh:"
-        ls -laGh $full_path
+        ls -laGh "${full_path}"
     fi
     echo ""
 done < $roots_file
