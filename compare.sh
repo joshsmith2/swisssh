@@ -8,8 +8,9 @@ path=''
 list_dir=false
 tree_diff=false
 full_diff=false
+byte_sizes=false
 
-while getopts "r:p:hltf" opt; do
+while getopts "r:p:hltfb" opt; do
     case $opt in 
         r)
             roots_file=$OPTARG
@@ -26,6 +27,9 @@ while getopts "r:p:hltf" opt; do
         f)
             full_diff=true
             ;;
+        b)
+            byte_sizes=true
+            ;;
         h)
             echo "This script will allow you to compare folder structures located at distinct roots."
             echo "Usage:"
@@ -34,6 +38,7 @@ while getopts "r:p:hltf" opt; do
             echo "    -l : Print a directory listing of each path"
             echo "    -t : Open a vimdiff of each path's tree - WIP"
             echo "    -f : Open a vimdiff of every file within each path."
+            echo "    -b : Use byte sizes, not human readable ones."
     esac
 done
 
@@ -52,11 +57,20 @@ while IFS= read -r root; do
     roots_string="$roots_string $root"
     full_path=$root$path
     echo $full_path
-    total_size=`du -hc "${full_path}" | tail -n 1`
+    if $byte_sizes; then
+        total_size=`du -c "${full_path}" | tail -n 1`
+    else
+        total_size=`du -hc "${full_path}" | tail -n 1`
+    fi
     echo "Size: $total_size"
     if $list_dir; then
-        echo "ls -laGh:"
-        ls -laGh "${full_path}"
+        if $byte_sizes; then
+            echo "ls -laG:"
+            ls -laG "${full_path}"
+        else
+            echo "ls -laGh:"
+            ls -laGh "${full_path}"
+        fi
     fi
     echo ""
 done < $roots_file
