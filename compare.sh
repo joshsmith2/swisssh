@@ -33,7 +33,7 @@ while getopts "r:p:hltf" opt; do
             echo "    -p path : Path to the file or folder you'd like information on."
             echo "    -l : Print a directory listing of each path"
             echo "    -t : Open a vimdiff of each path's tree - WIP"
-            echo "    -f : Open a vimdiff of every file within each path - WIP"
+            echo "    -f : Open a vimdiff of every file within each path."
     esac
 done
 
@@ -48,7 +48,7 @@ echo "Roots file (should contain locations to search within): $roots_file" >&2
 roots_string=''
 
 echo "Checking paths:"
-for root in `cat $roots_file`; do
+while IFS= read -r root; do
     roots_string="$roots_string $root"
     full_path=$root$path
     echo $full_path
@@ -59,7 +59,7 @@ for root in `cat $roots_file`; do
         ls -laGh $full_path
     fi
     echo ""
-done
+done < $roots_file
 
 # WIP: Will be developed further if needed.
 #if $tree_diff; then
