@@ -42,6 +42,16 @@ while getopts "r:p:hltfb" opt; do
     esac
 done
 
+#Functions to call
+#function get_trimmed_ls_output () {
+#    ls -lAGohT ./* | tr -s ' ' | cut -d ' ' -f 3- 
+#}
+
+function get_size_due_to_dirs(){
+    dirs=`./countdirs.sh $1`
+    echo "found $dirs"
+}
+
 if [[ -z $path ]]; then
     echo "Error: Please specify a path using the '-p' flag, or run this with '-h' for help."
     exit
@@ -52,11 +62,19 @@ echo "Roots file (should contain locations to search within): $roots_file" >&2
 
 roots_string=''
 
+#if $list_dir; then
+#    full_source_ls=`ls -lAGoTR .`
+
 echo "Checking paths:"
 while IFS= read -r root; do
     roots_string="$roots_string $root"
     full_path=$root$path
+    dirs=`get_size_due_to_dirs $full_path`
+    
+    
     echo $full_path
+    
+    
     if $byte_sizes; then
         total_size=`du -c "${full_path}" | tail -n 1`
     else
@@ -65,15 +83,17 @@ while IFS= read -r root; do
     echo "Size: $total_size"
     if $list_dir; then
         if $byte_sizes; then
-            echo "ls -laG:"
-            ls -laG "${full_path}"
+            echo "ls -lAG:"
+            ls -lAGsk"${full_path}"
         else
-            echo "ls -laGh:"
-            ls -laGh "${full_path}"
+            echo "ls -lAGh:"
+            ls -lAGhsk "${full_path}"
         fi
     fi
     echo ""
 done < $roots_file
+
+
 
 # WIP: Will be developed further if needed.
 #if $tree_diff; then
