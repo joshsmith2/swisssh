@@ -224,7 +224,7 @@ else
 fi
 
 
-## Parse the destination
+## Parse the sorce
 
 if [[ -d ${UncheckedSourceRoot} ]]
 then
@@ -329,7 +329,7 @@ then
 else
 	if [ $RsyncVersResult -ge 3 ]
 	then
-	for Item in $SrcList
+	for Item in $PathsList
         do
         # Check the dir exists
             if [ ! -z $Item ]
