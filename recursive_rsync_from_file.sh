@@ -1,5 +1,5 @@
 #!/bin/bash
-##########################################################################################
+#########################################################################################
 # This shameful hack was developed by Stephen Buckley in Late July and early August 2013,
 # and then modified to take input from a file by Josh Smith.
 # It's got us out of some scrapes,
@@ -41,8 +41,8 @@ FuncRsyncVers () {
 # Create the required directory tree at the destnation
 MakeDestDirs () {
     Dir=`dirname "$Item"`
-    DestDir="$DestRoot"/"$Item"
-    mkdir -p "$DestDir"
+    DestDir="$DestRoot/$Dir"
+    mkdir -p "$DestDir" && echo "Made $DestDir"
 }
 
 # function for background rsync of specified source and destination RsyncV2
@@ -51,13 +51,13 @@ V2sync () {
 	FilesLogFilePath=$LogRoot/${BaseItem}_Files.log
 	LogFilePath=$LogRoot/$BaseItem.log
 	ErrorsLogFilePath=$LogRoot/${BaseItem}_Errors.log
-	if [[ -d ${Item} ]]
+	if [[ -d ${FullSourcePath} ]]
 	then
 	    MakeDestDirs
-		Item=$Item/
-		BaseItem=$BaseItem/
+            Item=$Item/
+	    BaseItem=$BaseItem/
 	fi
-	$RsyncApp -WaE --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestDir/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
+        $RsyncApp -WaE --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
 }
 
 # function for throttled version of  V2Sync
@@ -84,13 +84,13 @@ V3sync () {
 	FilesLogFilePath=$LogRoot/${BaseItem}_Files.log
 	LogFilePath=$LogRoot/$BaseItem.log
 	ErrorsLogFilePath=$LogRoot/${BaseItem}_Errors.log
-	if [[ -d ${Item} ]]
+	if [[ -d ${FullSourcePath} ]]
 	then
 	    MakeDestDirs
-		Item=$Item/
-		BaseItem=$BaseItem/
+	    Item=$Item/
+	    BaseItem=$BaseItem/
 	fi
-	$RsyncApp -WaX --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestDir/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
+	$RsyncApp -WaX --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
 }
 
 # function for throttled version of  V3Sync
