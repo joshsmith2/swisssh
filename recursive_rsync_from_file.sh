@@ -38,18 +38,26 @@ FuncRsyncVers () {
 	echo $RsyncVers
 }
 
+# Create the required directory tree at the destnation
+MakeDestDirs () {
+    Dir=`dirname "$Item"`
+    DestDir="$DestRoot"/"$Item"
+    mkdir -p "$DestDir"
+}
+
 # function for background rsync of specified source and destination RsyncV2
 V2sync () {
-	BaseItem=$(basename $Item)
+	BaseItem=`basename $Item`
 	FilesLogFilePath=$LogRoot/${BaseItem}_Files.log
 	LogFilePath=$LogRoot/$BaseItem.log
 	ErrorsLogFilePath=$LogRoot/${BaseItem}_Errors.log
 	if [[ -d ${Item} ]]
 	then
+	    MakeDestDirs
 		Item=$Item/
 		BaseItem=$BaseItem/
 	fi
-	$RsyncApp -WaE --log-file=$FilesLogFilePath --delete --stats -h $Item $DestRoot/$BaseItem 1>> $LogFilePath 2>> $ErrorsLogFilePath &
+	$RsyncApp -WaE --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestDir/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
 }
 
 # function for throttled version of  V2Sync
@@ -72,16 +80,17 @@ V2syncThrot () {
 
 # function for background rsync of specified source and destination RsyncV3
 V3sync () {
-	BaseItem=$(basename $Item)
+    BaseItem=`basename $Item`
 	FilesLogFilePath=$LogRoot/${BaseItem}_Files.log
 	LogFilePath=$LogRoot/$BaseItem.log
 	ErrorsLogFilePath=$LogRoot/${BaseItem}_Errors.log
 	if [[ -d ${Item} ]]
 	then
+	    MakeDestDirs
 		Item=$Item/
 		BaseItem=$BaseItem/
 	fi
-	$RsyncApp -WaX --log-file=$FilesLogFilePath --delete --stats -h $Item $DestRoot/$BaseItem 1>> $LogFilePath 2>> $ErrorsLogFilePath &
+	$RsyncApp -WaX --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestDir/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
 }
 
 # function for throttled version of  V3Sync
@@ -162,8 +171,10 @@ fi
 		
 
 echo "Please enter the path to the file listing data to move…"
-read -e -p "Path: " UncheckedSrcRoot
+read -e -p "Path: " UncheckedPathsFile
 echo ""
+echo "Please enter the full path to the root folder containing paths you'd like to move..."
+read -e -p "Path: " UncheckedSourceRoot
 echo "Please enter the destination path…"
 read -e -p "Path: " UncheckedDestRoot
 echo "$UncheckedDestRoot"
@@ -190,24 +201,45 @@ echo ""
 # set -x
 # trap read debug
 
-## Parse the Source
-
-if [[ -f ${UncheckedSrcRoot} ]]
+## Parse the paths file
+echo ${UncheckedPathsFile}
+if [[ -f ${UncheckedPathsFile} ]]
 then
-	SrcList=`cat $UncheckedSrcRoot`
+	PathsList=`cat $UncheckedPathsFile`
 else
-	if [[ -d  ${UncheckedSrcRoot} ]]
+	if [[ -d  ${UncheckedPathsFile} ]]
 	then
-		echo "SOURCE IS A DIRECTORY NOT A FILE!"
+		echo "PATHS FILE IS A DIRECTORY NOT A FILE!"
 		exit 1
 	else
-		if [[ ! -e ${UncheckedSrcRoot} ]]
+		if [[ ! -e ${UncheckedPathsFile} ]]
 		then
-			echo "SOURCE DOES NOT EXIST!"
+			echo "PATHS FILE DOES NOT EXIST!"
 			exit 1
 		else
 			echo "GOD ONLY KNOWS WHAT YOU ARE TRYING TO SYNC? BUT I AM HAVING NONE OF IT!"
 			exit 1
+		fi
+	fi
+fi
+
+
+## Parse the destination
+
+if [[ -d ${UncheckedSourceRoot} ]]
+then
+	SourceRoot=$UncheckedSourceRoot
+else
+	if [[ -f  ${UncheckedSourceRoot} ]]
+	then
+		echo "SOURCE ROOT $UncheckedSourceRoot IS A FILE NOT A DIRECTORY!"
+		exit 1
+	else
+		if [[ ! -e  ${UncheckedSourceRoot} ]]
+		then
+			DestRoot="$UncheckedSourceRoot"
+			echo "Source root doesn't exist! Sorry, bye."
+            exit 1
 		fi
 	fi
 fi
@@ -281,20 +313,38 @@ if [ $RsyncVersResult -eq 2 ]
 then
 	for Item in $SrcList
         do
+        # Check the dir exists
             if [ ! -z $Item ]
             then
-                V2syncThrot
+                FullSourcePath=$SourceRoot/$Item
+                # If the path exists, move it
+                if [ -e "$FullSourcePath" ]
+                then
+                    V2syncThrot
+                else
+                    echo "Could not sync $FullSourcePath as it does not exist"
+                fi
             fi
         done
 else
 	if [ $RsyncVersResult -ge 3 ]
 	then
-		for Item in $SrcList
-		do 
-		    if [ ! -z $Item ]
-		    then
-					V3syncThrot
-			fi
-		done
+	for Item in $SrcList
+        do
+        # Check the dir exists
+            if [ ! -z $Item ]
+            then
+                FullSourcePath=$SourceRoot/$Item
+                # If the path exists, move it
+                if [ -e "$FullPath" ]
+                then
+                    V2syncThrot
+                else
+                    echo "Could not sync $FullSourcePath as it does not exist"
+                fi
+            fi
+        done
 	fi
 fi
+
+
