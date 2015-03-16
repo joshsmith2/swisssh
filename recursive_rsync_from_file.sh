@@ -22,13 +22,13 @@ ParrallelRs=60
 # function for getting number of running rsync processes
 
 FuncRsyncProcs () {
-	RsyncProcs=` ps -ax | grep "[r]sync " | nl | tail -n 1 | awk '{print $1}' `
+	RsyncProcs=` ps ax | grep "[r]sync " | nl | tail -n 1 | awk '{print $1}' `
 	echo $RsyncProcs
 }
 
 # function for getting testing my oh so clever rsync proc test
 FuncGrepTest() {
-	GrepTest=` ps -ax | grep --color=auto "[r]sync " `
+	GrepTest=` ps ax | grep --color=auto "[r]sync " `
 	echo $GrepTest
 }
 
@@ -336,9 +336,9 @@ else
             then
                 FullSourcePath=$SourceRoot/$Item
                 # If the path exists, move it
-                if [ -e "$FullPath" ]
+                if [ -e "$FullSourcePath" ]
                 then
-                    V2syncThrot
+                    V3syncThrot
                 else
                     echo "Could not sync $FullSourcePath as it does not exist"
                 fi
