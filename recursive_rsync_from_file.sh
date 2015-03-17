@@ -57,7 +57,7 @@ V2sync () {
             Item=$Item/
 	    BaseItem=$BaseItem/
 	fi
-        $RsyncApp -WaE --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
+        $RsyncApp -WltDE --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
 }
 
 # function for throttled version of  V2Sync
@@ -77,7 +77,6 @@ V2syncThrot () {
 	done
 }
 
-
 # function for background rsync of specified source and destination RsyncV3
 V3sync () {
     BaseItem=`basename $Item`
@@ -90,7 +89,7 @@ V3sync () {
 	    Item=$Item/
 	    BaseItem=$BaseItem/
 	fi
-	$RsyncApp -WaX --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
+	$RsyncApp -WltDX --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
 }
 
 # function for throttled version of  V3Sync
@@ -110,12 +109,11 @@ V3syncThrot () {
 	done
 }	
 
-
 ##########################################################################################
 RsyncVersResult=$(FuncRsyncVers)
 echo "----------------------------------------------------------------------------"
 echo "|                                                                           |"
-echo "| You appear to be using $RsyncApp as your rsync varient.              |"
+echo "| You appear to be using $RsyncApp as your rsync variant.              |"
 echo "| This binary is major release $RsyncVersResult                                            |"
 echo "| Rsync version 3 is recomended if available, if you would like to use an   |"
 echo "| alternative binary please enter the path now, otherwise press enter       |"
