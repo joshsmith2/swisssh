@@ -57,7 +57,7 @@ V2sync () {
             Item=$Item/
 	    BaseItem=$BaseItem/
 	fi
-        $RsyncApp -WltDE --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
+        $RsyncApp -WrltDE --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
 }
 
 # function for throttled version of  V2Sync
@@ -89,7 +89,7 @@ V3sync () {
 	    Item=$Item/
 	    BaseItem=$BaseItem/
 	fi
-	$RsyncApp -WltDX --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
+	$RsyncApp -WrltDX --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
 }
 
 # function for throttled version of  V3Sync
