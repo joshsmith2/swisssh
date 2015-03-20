@@ -173,6 +173,7 @@ read -e -p "Path: " UncheckedPathsFile
 echo ""
 echo "Please enter the full path to the root folder containing paths you'd like to move..."
 read -e -p "Path: " UncheckedSourceRoot
+echo ""
 echo "Please enter the destination path…"
 read -e -p "Path: " UncheckedDestRoot
 echo "$UncheckedDestRoot"
