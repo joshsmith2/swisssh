@@ -9,7 +9,7 @@
 
 # Get arguments from cmdline
 #Initialise command line arguments
-while getopts "hm:f:s:d:l:p:c:v" opt; do
+while getopts "hm:f:s:d:l:p:c:vb:" opt; do
     case $opt in
         m)
             #Mode: str - one of 'int' for 'interactive' or 'cmd' for 'command line'
@@ -39,6 +39,9 @@ while getopts "hm:f:s:d:l:p:c:v" opt; do
             ;;
         v)
             Verbose=true
+            ;;
+        b)
+            RsyncApp=$OPTARG
             ;;
         h)
 
@@ -72,6 +75,10 @@ while getopts "hm:f:s:d:l:p:c:v" opt; do
              -v : bool
                 Verbose - if true, print info to stdout as opposed to only errors.
 
+             -b : str
+                binary - path to an alternative rsync binary to use. If not
+                specified, use the system default.
+
              -l=logRoot: str - path
                 A directory in which to create logs for this move
 
@@ -93,7 +100,9 @@ fi
 
 # Initialise some variables
 NumRsyncProcs=0
-RsyncApp=$(which rsync)
+if [ -z $RsyncApp ]; then
+    RsyncApp=$(which rsync)
+fi
 ParrallelRs=60
 
 # Define some functions:
@@ -127,23 +136,24 @@ MakeDestDirs () {
 
 # function for background rsync of specified source and destination RsyncV2
 V2sync () {
-	BaseItem=`basename $Item`
 	FilesLogFilePath=$LogRoot/${BaseItem}_Files.log
 	LogFilePath=$LogRoot/$BaseItem.log
 	ErrorsLogFilePath=$LogRoot/${BaseItem}_Errors.log
 	if [[ -d ${FullSourcePath} ]]
 	then
 	    MakeDestDirs
-        Item=$Item/
 	    BaseItem=$BaseItem/
 	fi
-        $RsyncApp -WrltDE --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
+
+    $RsyncApp -WrltDE --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$DirItem 1>> $LogFilePath 2>> $ErrorsLogFilePath &
 }
 
 # function for throttled version of  V2Sync
 V2syncThrot () {
 	while :
 	do
+	    BaseItem=`basename $Item`
+	    DirItem=`dirname $Item`
 		NumRsyncProcs=$(FuncRsyncProcs)
 		GrepResult=$(FuncGrepTest)
 		if [[ $NumRsyncProcs -le $ParrallelRs ]]
@@ -159,23 +169,23 @@ V2syncThrot () {
 
 # function for background rsync of specified source and destination RsyncV3
 V3sync () {
-    BaseItem=`basename $Item`
 	FilesLogFilePath=$LogRoot/${BaseItem}_Files.log
 	LogFilePath=$LogRoot/$BaseItem.log
 	ErrorsLogFilePath=$LogRoot/${BaseItem}_Errors.log
 	if [[ -d ${FullSourcePath} ]]
 	then
 	    MakeDestDirs
-	    Item=$Item/
 	    BaseItem=$BaseItem/
 	fi
-	$RsyncApp -WrltDX --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$Item 1>> $LogFilePath 2>> $ErrorsLogFilePath &
+	$RsyncApp -WrltDX --log-file=$FilesLogFilePath --delete --stats -h $FullSourcePath $DestRoot/$DirItem 1>> $LogFilePath 2>> $ErrorsLogFilePath &
 }
 
 # function for throttled version of  V3Sync
 V3syncThrot () {
 	while :
 	do
+        BaseItem=`basename $Item`
+	    DirItem=`dirname $Item`
 		NumRsyncProcs=$(FuncRsyncProcs)
 		GrepResult=$(FuncGrepTest)
 		if [[ $NumRsyncProcs -le $ParrallelRs ]]
@@ -268,7 +278,7 @@ if $interactive; then
     echo "Please enter the log path…"
     read -e -p "Path: " UncheckedLogRoot
     echo ""
-    echo "enter the number of rsync jobs you want in parallel."
+    echo "Enter the number of rsync jobs you want in parallel."
     read -e -p "Number of parallel rsyncs (leave blank for default of 20):" DesiredParrallelRs
     echo ""
     echo "----------------------------------------------------------------------------"
@@ -397,7 +407,8 @@ IFS=$'\n'
 
 if [ $RsyncVersResult -eq 2 ]
 then
-	for Item in $SrcList
+    echo $PathsList
+	for Item in $PathsList
         do
         # Check the dir exists
             if [ ! -z $Item ]
